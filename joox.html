@@ -331,7 +331,7 @@
         }
         #marketplace-container {
             display: none;
-            width: 100%;
+            width:  Frameworks100%;
             max-width: 900px;
         }
         .popup {
@@ -1291,7 +1291,12 @@
                 return;
             }
 
-            if (currentUser === 'OfficialJoox' && !username) {
+            // Debugging logs (remove after testing)
+            console.log('Current User:', currentUser);
+            console.log('Target Username:', username);
+            console.log('Users in storage:', Object.keys(users));
+
+            if (currentUser === 'OfficialJoox' && username === '') {
                 // Send to all users except OfficialJoox
                 Object.keys(users).forEach(user => {
                     if (user !== 'OfficialJoox') {
@@ -1300,14 +1305,19 @@
                 });
                 localStorage.setItem('users', JSON.stringify(users));
                 alert('Notification sent to all users.');
-            } else if (users[username]) {
+            } else {
                 // Send to specific user
+                if (!username) {
+                    alert('Please enter a username or leave blank for all users (OfficialJoox only).');
+                    return;
+                }
+                if (!users.hasOwnProperty(username)) {
+                    alert('User not found!');
+                    return;
+                }
                 users[username].notifications.push(`${currentUser === 'OfficialJoox' ? 'OfficialJoox' : 'Admin'}: ${text}`);
                 localStorage.setItem('users', JSON.stringify(users));
                 alert(`Notification sent to ${username}.`);
-            } else {
-                alert('User not found!');
-                return;
             }
 
             document.getElementById('admin-username').value = '';
@@ -1744,7 +1754,7 @@
             const users = JSON.parse(localStorage.getItem('users') || '{}');
             if (!users['OfficialJoox']) {
                 users['OfficialJoox'] = {
-                    password: 'admin123', // You can change this to a secure password
+                    password: 'admin123', // Change this to a secure password
                     birthdate: '2000-01-01',
                     friends: [],
                     friendRequestsSent: [],
