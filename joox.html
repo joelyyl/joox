@@ -172,7 +172,6 @@
         .back-button:hover {
             text-decoration: underline;
         }
-        /* Homepage Styles */
         #homepage-container {
             display: none;
             width: 100%;
@@ -258,7 +257,6 @@
         body.dark .friend-requests li, body.dark .friends-list li {
             background: #546e7a;
         }
-        /* Game Styles */
         #games-container, #game-obstacle-container, #game-reaction-container, #game-trivia-container {
             display: none;
             width: 100%;
@@ -279,7 +277,6 @@
         body.dark canvas {
             border-color: #78909c;
         }
-        /* Admin Styles */
         #admin-container {
             display: none;
             width: 100%;
@@ -288,13 +285,11 @@
         .admin-option {
             margin-bottom: 20px;
         }
-        /* Settings Styles */
         #settings-container {
             display: none;
             width: 100%;
             max-width: 450px;
         }
-        /* Notifications Styles */
         #notifications-container {
             display: none;
             width: 100%;
@@ -322,7 +317,6 @@
         body.dark #notifications-list p {
             background: #546e7a;
         }
-        /* Profile Styles */
         #profile-container {
             display: none;
             width: 100%;
@@ -335,13 +329,11 @@
             border-radius: 50%;
             margin: 20px auto;
         }
-        /* Marketplace Styles */
         #marketplace-container {
             display: none;
             width: 100%;
             max-width: 900px;
         }
-        /* Popup Styles */
         .popup {
             position: fixed;
             top: 50%;
@@ -534,7 +526,7 @@
         <a class="back-button" onclick="showHomepage()">< Go Back</a>
         <h2>Admin Panel</h2>
         <div class="form-group">
-            <label for="admin-username">Username</label>
+            <label for="admin-username">Username (Leave blank for all users if OfficialJoox)</label>
             <input type="text" id="admin-username" placeholder="Enter username">
         </div>
         <div class="admin-option">
@@ -836,7 +828,7 @@
         }
 
         function showAdmin() {
-            if (currentUser === 'OfficialJoox') {
+            if (currentUser === 'joelllyyl' || currentUser === 'OfficialJoox') {
                 hideAllContainers();
                 adminContainer.style.display = 'block';
             } else {
@@ -1294,18 +1286,30 @@
             const text = document.getElementById('notification-text').value.trim();
             const users = JSON.parse(localStorage.getItem('users') || '{}');
 
-            if (!users[username]) {
-                alert('User not found!');
-                return;
-            }
             if (!text) {
                 alert('Please enter a notification message!');
                 return;
             }
 
-            users[username].notifications.push(`Admin: ${text}`);
-            localStorage.setItem('users', JSON.stringify(users));
-            alert(`Notification sent to ${username}.`);
+            if (currentUser === 'OfficialJoox' && !username) {
+                // Send to all users except OfficialJoox
+                Object.keys(users).forEach(user => {
+                    if (user !== 'OfficialJoox') {
+                        users[user].notifications.push(`OfficialJoox: ${text}`);
+                    }
+                });
+                localStorage.setItem('users', JSON.stringify(users));
+                alert('Notification sent to all users.');
+            } else if (users[username]) {
+                // Send to specific user
+                users[username].notifications.push(`${currentUser === 'OfficialJoox' ? 'OfficialJoox' : 'Admin'}: ${text}`);
+                localStorage.setItem('users', JSON.stringify(users));
+                alert(`Notification sent to ${username}.`);
+            } else {
+                alert('User not found!');
+                return;
+            }
+
             document.getElementById('admin-username').value = '';
             document.getElementById('notification-text').value = '';
         }
@@ -1734,6 +1738,32 @@
             currentUser = sessionStorage.getItem('loggedInUser');
             showHomepage();
         }
+
+        // Pre-create OfficialJoox admin account if it doesn't exist
+        (function initializeOfficialJoox() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (!users['OfficialJoox']) {
+                users['OfficialJoox'] = {
+                    password: 'admin123', // You can change this to a secure password
+                    birthdate: '2000-01-01',
+                    friends: [],
+                    friendRequestsSent: [],
+                    friendRequestsReceived: [],
+                    notifications: [],
+                    banned: false,
+                    banReason: '',
+                    banUntil: null,
+                    warned: false,
+                    warnReason: '',
+                    unbanReason: '',
+                    avatar: { headColor: '#ff9999', torsoColor: '#ff9999', legsColor: '#ff9999', accessories: [] },
+                    jooxBucks: 1000,
+                    canChat: true,
+                    theme: 'light'
+                };
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        })();
     </script>
 </body>
 </html>
