@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joox - Social Platform with Games</title>
     <style>
-        /* Your existing CSS styles */
+        /* Your existing CSS styles remain unchanged */
         * {
             margin: 0;
             padding: 0;
@@ -757,18 +757,7 @@
         }
 
         function showHomepage() {
-            loginContainer.classList.remove('active');
-            signupContainer.classList.remove('active');
-            gamesContainer.style.display = 'none';
-            gameObstacleContainer.style.display = 'none';
-            gameReactionContainer.style.display = 'none';
-            gameTriviaContainer.style.display = 'none';
-            adminContainer.style.display = 'none';
-            avatarContainer.style.display = 'none';
-            settingsContainer.style.display = 'none';
-            notificationsContainer.style.display = 'none';
-            profileContainer.style.display = 'none';
-            marketplaceContainer.style.display = 'none';
+            hideAllContainers();
             homepageContainer.style.display = 'block';
             document.getElementById('welcome-message').textContent = `Welcome, @${currentUser}`;
             updateJooxBucks();
@@ -782,8 +771,24 @@
             }
         }
 
-        function showGames() {
+        function hideAllContainers() {
+            loginContainer.classList.remove('active');
+            signupContainer.classList.remove('active');
             homepageContainer.style.display = 'none';
+            gamesContainer.style.display = 'none';
+            gameObstacleContainer.style.display = 'none';
+            gameReactionContainer.style.display = 'none';
+            gameTriviaContainer.style.display = 'none';
+            adminContainer.style.display = 'none';
+            avatarContainer.style.display = 'none';
+            settingsContainer.style.display = 'none';
+            notificationsContainer.style.display = 'none';
+            profileContainer.style.display = 'none';
+            marketplaceContainer.style.display = 'none';
+        }
+
+        function showGames() {
+            hideAllContainers();
             gamesContainer.style.display = 'block';
             document.getElementById('obstacle-btn').disabled = !gamesEnabled;
             document.getElementById('reaction-btn').disabled = !gamesEnabled;
@@ -795,7 +800,7 @@
                 alert('Games are currently disabled by an admin.');
                 return;
             }
-            gamesContainer.style.display = 'none';
+            hideAllContainers();
             gameObstacleContainer.style.display = 'block';
             startObstacle();
             startJooxBucksTimer();
@@ -806,7 +811,7 @@
                 alert('Games are currently disabled by an admin.');
                 return;
             }
-            gamesContainer.style.display = 'none';
+            hideAllContainers();
             gameReactionContainer.style.display = 'block';
             startReaction();
             startJooxBucksTimer();
@@ -817,7 +822,7 @@
                 alert('Games are currently disabled by an admin.');
                 return;
             }
-            gamesContainer.style.display = 'none';
+            hideAllContainers();
             gameTriviaContainer.style.display = 'block';
             startTrivia();
             startJooxBucksTimer();
@@ -832,7 +837,7 @@
 
         function showAdmin() {
             if (currentUser === 'joelllyyl') {
-                homepageContainer.style.display = 'none';
+                hideAllContainers();
                 adminContainer.style.display = 'block';
             } else {
                 alert('Access denied. Admin only.');
@@ -840,49 +845,39 @@
         }
 
         function showAvatar() {
-            homepageContainer.style.display = 'none';
+            hideAllContainers();
             avatarContainer.style.display = 'block';
             loadAvatar();
             updateAvatarPreview();
         }
 
         function showSettings() {
-            homepageContainer.style.display = 'none';
+            hideAllContainers();
             settingsContainer.style.display = 'block';
             loadTheme();
         }
 
         function showNotifications() {
-            homepageContainer.style.display = 'none';
+            hideAllContainers();
             notificationsContainer.style.display = 'block';
             displayNotifications();
         }
 
         function showProfile() {
-            homepageContainer.style.display = 'none';
+            hideAllContainers();
             profileContainer.style.display = 'block';
             updateProfileDisplay();
         }
 
         function showMarketplace() {
-            avatarContainer.style.display = 'none';
+            hideAllContainers();
             marketplaceContainer.style.display = 'block';
         }
 
         function logout() {
             sessionStorage.removeItem('loggedInUser');
             currentUser = null;
-            homepageContainer.style.display = 'none';
-            gamesContainer.style.display = 'none';
-            gameObstacleContainer.style.display = 'none';
-            gameReactionContainer.style.display = 'none';
-            gameTriviaContainer.style.display = 'none';
-            adminContainer.style.display = 'none';
-            avatarContainer.style.display = 'none';
-            settingsContainer.style.display = 'none';
-            notificationsContainer.style.display = 'none';
-            profileContainer.style.display = 'none';
-            marketplaceContainer.style.display = 'none';
+            hideAllContainers();
             loginContainer.classList.add('active');
             document.getElementById('welcome-message').textContent = '';
             document.getElementById('jooxbucks').textContent = '';
@@ -891,7 +886,7 @@
 
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const username = document.getElementById('login-username').value;
+            const username = document.getElementById('login-username').value.trim();
             const password = document.getElementById('login-password').value;
             const users = JSON.parse(localStorage.getItem('users') || '{}');
 
@@ -966,7 +961,6 @@
             switchToLogin();
         });
 
-        // Username Validation
         function isValidUsername(username) {
             const validPattern = /^[A-Za-z0-9_]+$/;
             return username.length > 0 && 
@@ -1016,41 +1010,28 @@
             const senderData = users[currentUser];
             const receiverData = users[username];
 
-            if (!senderData || !receiverData) {
+            if (!receiverData) {
                 alert('User not found!');
                 return;
             }
 
-            // Check if the request already exists
-            if (
-                senderData.friendRequestsSent.some(req => req.username === username) ||
-                receiverData.friendRequestsReceived.some(req => req.username === currentUser)
-            ) {
-                alert('Friend request already sent or pending!');
+            if (senderData.friendRequestsSent.some(req => req.username === username)) {
+                alert('Friend request already sent!');
                 return;
             }
 
-            // Create a unique request ID
             const requestId = Date.now().toString();
-
-            // Add the request to the sender's sent requests
             senderData.friendRequestsSent.push({ id: requestId, username: username });
-
-            // Add the request to the receiver's received requests
             receiverData.friendRequestsReceived.push({ id: requestId, username: currentUser });
-
-            // Save the updated data to localStorage
+            receiverData.notifications.push(`Friend request received from @${currentUser}`);
             localStorage.setItem('users', JSON.stringify(users));
-
             alert(`Friend request sent to ${username}!`);
-            displayFriends(); // Refresh the friend requests list
+            displayFriends();
         }
 
         function acceptFriendRequest(requestId) {
             const users = JSON.parse(localStorage.getItem('users') || '{}');
             const userData = users[currentUser];
-
-            // Find the request
             const request = userData.friendRequestsReceived.find(req => req.id === requestId);
 
             if (!request) {
@@ -1061,28 +1042,19 @@
             const senderUsername = request.username;
             const senderData = users[senderUsername];
 
-            // Remove the request from the receiver's received requests
             userData.friendRequestsReceived = userData.friendRequestsReceived.filter(req => req.id !== requestId);
-
-            // Remove the request from the sender's sent requests
-            senderData.friendRequestsSent = senderData.friendRequestsSent.filter(req => req.id !== requestId);
-
-            // Add each other as friends
+            senderData.friendRequestsSent = senderData.friendRequestsSent.filter(req => req.username === currentUser);
             userData.friends.push(senderUsername);
             senderData.friends.push(currentUser);
-
-            // Save the updated data to localStorage
+            senderData.notifications.push(`@${currentUser} accepted your friend request!`);
             localStorage.setItem('users', JSON.stringify(users));
-
             alert(`You are now friends with ${senderUsername}!`);
-            displayFriends(); // Refresh the friends list
+            displayFriends();
         }
 
         function declineFriendRequest(requestId) {
             const users = JSON.parse(localStorage.getItem('users') || '{}');
             const userData = users[currentUser];
-
-            // Find the request
             const request = userData.friendRequestsReceived.find(req => req.id === requestId);
 
             if (!request) {
@@ -1093,42 +1065,29 @@
             const senderUsername = request.username;
             const senderData = users[senderUsername];
 
-            // Remove the request from the receiver's received requests
             userData.friendRequestsReceived = userData.friendRequestsReceived.filter(req => req.id !== requestId);
-
-            // Remove the request from the sender's sent requests
-            senderData.friendRequestsSent = senderData.friendRequestsSent.filter(req => req.id !== requestId);
-
-            // Save the updated data to localStorage
+            senderData.friendRequestsSent = senderData.friendRequestsSent.filter(req => req.username === currentUser);
             localStorage.setItem('users', JSON.stringify(users));
-
             alert(`Friend request from ${senderUsername} declined.`);
-            displayFriends(); // Refresh the friend requests list
+            displayFriends();
         }
 
         function displayFriends() {
             const users = JSON.parse(localStorage.getItem('users') || '{}');
             const userData = users[currentUser] || { friends: [], friendRequestsReceived: [] };
 
-            // Clear existing lists
             friendsList.innerHTML = '';
             friendRequests.innerHTML = '';
 
-            // Display friends
             userData.friends.forEach(friend => {
                 const li = document.createElement('li');
                 li.textContent = friend;
                 friendsList.appendChild(li);
             });
 
-            // Display friend requests
             userData.friendRequestsReceived.forEach(req => {
                 const li = document.createElement('li');
-                li.innerHTML = `
-                    ${req.username}
-                    <button onclick="acceptFriendRequest('${req.id}')">Accept</button>
-                    <button onclick="declineFriendRequest('${req.id}')">Decline</button>
-                `;
+                li.innerHTML = `${req.username} <button onclick="acceptFriendRequest('${req.id}')">Accept</button> <button onclick="declineFriendRequest('${req.id}')">Decline</button>`;
                 friendRequests.appendChild(li);
             });
         }
@@ -1141,7 +1100,7 @@
                     users[currentUser].jooxBucks += 2;
                     localStorage.setItem('users', JSON.stringify(users));
                     updateJooxBucks();
-                }, 60000); // 1 minute = 60000ms
+                }, 60000);
             }
         }
 
@@ -1192,13 +1151,310 @@
             showHomepage();
         }
 
+        // Admin Functions
+        function banUser() {
+            const username = document.getElementById('admin-username').value.trim();
+            const reason = document.getElementById('ban-reason').value.trim();
+            const duration = document.getElementById('ban-duration').value;
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+            if (!users[username]) {
+                alert('User not found!');
+                return;
+            }
+            if (username === currentUser) {
+                alert('You cannot ban yourself!');
+                return;
+            }
+
+            users[username].banned = true;
+            users[username].banReason = reason;
+            users[username].banUntil = duration === 'permanent' ? 'permanent' : Date.now() + duration * 24 * 60 * 60 * 1000;
+            users[username].notifications.push(`You have been banned. Reason: ${reason}`);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`${username} has been banned.`);
+            document.getElementById('admin-username').value = '';
+            document.getElementById('ban-reason').value = '';
+        }
+
+        function resetUser() {
+            const username = document.getElementById('admin-username').value.trim();
+            const reason = document.getElementById('ban-reason').value.trim();
+            const duration = document.getElementById('ban-duration').value;
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+            if (!users[username]) {
+                alert('User not found!');
+                return;
+            }
+            if (username === currentUser) {
+                alert('You cannot reset yourself!');
+                return;
+            }
+
+            users[username] = {
+                password: users[username].password,
+                birthdate: users[username].birthdate,
+                friends: [],
+                friendRequestsSent: [],
+                friendRequestsReceived: [],
+                notifications: [`Your account has been reset and banned. Reason: ${reason}`],
+                banned: true,
+                banReason: reason,
+                banUntil: duration === 'permanent' ? 'permanent' : Date.now() + duration * 24 * 60 * 60 * 1000,
+                warned: false,
+                warnReason: '',
+                unbanReason: '',
+                avatar: { headColor: '#ff9999', torsoColor: '#ff9999', legsColor: '#ff9999', accessories: [] },
+                jooxBucks: 0,
+                canChat: users[username].canChat,
+                theme: 'light'
+            };
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`${username} has been reset and banned.`);
+            document.getElementById('admin-username').value = '';
+            document.getElementById('ban-reason').value = '';
+        }
+
+        function warnUser() {
+            const username = document.getElementById('admin-username').value.trim();
+            const reason = document.getElementById('warn-reason').value.trim();
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+            if (!users[username]) {
+                alert('User not found!');
+                return;
+            }
+            if (username === currentUser) {
+                alert('You cannot warn yourself!');
+                return;
+            }
+
+            users[username].warned = true;
+            users[username].warnReason = reason;
+            users[username].notifications.push(`You have been warned. Reason: ${reason}`);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`${username} has been warned.`);
+            document.getElementById('admin-username').value = '';
+            document.getElementById('warn-reason').value = '';
+        }
+
+        function addJooxBucks() {
+            const username = document.getElementById('admin-username').value.trim();
+            const amount = parseInt(document.getElementById('jooxbucks-amount').value);
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+            if (!users[username]) {
+                alert('User not found!');
+                return;
+            }
+            if (isNaN(amount) || amount < 0) {
+                alert('Please enter a valid amount!');
+                return;
+            }
+
+            users[username].jooxBucks += amount;
+            users[username].notifications.push(`Admin added ${amount} J$ to your account.`);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`Added ${amount} J$ to ${username}.`);
+            document.getElementById('admin-username').value = '';
+            document.getElementById('jooxbucks-amount').value = '';
+            if (username === currentUser) updateJooxBucks();
+        }
+
+        function subtractJooxBucks() {
+            const username = document.getElementById('admin-username').value.trim();
+            const amount = parseInt(document.getElementById('jooxbucks-amount').value);
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+            if (!users[username]) {
+                alert('User not found!');
+                return;
+            }
+            if (isNaN(amount) || amount < 0) {
+                alert('Please enter a valid amount!');
+                return;
+            }
+            if (users[username].jooxBucks < amount) {
+                alert('Not enough J$ to subtract!');
+                return;
+            }
+
+            users[username].jooxBucks -= amount;
+            users[username].notifications.push(`Admin subtracted ${amount} J$ from your account.`);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`Subtracted ${amount} J$ from ${username}.`);
+            document.getElementById('admin-username').value = '';
+            document.getElementById('jooxbucks-amount').value = '';
+            if (username === currentUser) updateJooxBucks();
+        }
+
+        function sendAdminNotification() {
+            const username = document.getElementById('admin-username').value.trim();
+            const text = document.getElementById('notification-text').value.trim();
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+            if (!users[username]) {
+                alert('User not found!');
+                return;
+            }
+            if (!text) {
+                alert('Please enter a notification message!');
+                return;
+            }
+
+            users[username].notifications.push(`Admin: ${text}`);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`Notification sent to ${username}.`);
+            document.getElementById('admin-username').value = '';
+            document.getElementById('notification-text').value = '';
+        }
+
+        function unbanUser() {
+            const username = document.getElementById('admin-username').value.trim();
+            const reason = document.getElementById('unban-reason').value.trim();
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+            if (!users[username]) {
+                alert('User not found!');
+                return;
+            }
+            if (!users[username].banned) {
+                alert('User is not banned!');
+                return;
+            }
+
+            users[username].banned = false;
+            users[username].banReason = '';
+            users[username].banUntil = null;
+            users[username].unbanReason = reason;
+            users[username].notifications.push(`You have been unbanned. Reason: ${reason}`);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`${username} has been unbanned.`);
+            document.getElementById('admin-username').value = '';
+            document.getElementById('unban-reason').value = '';
+        }
+
+        function toggleGames() {
+            gamesEnabled = document.getElementById('game-toggle').value === 'enabled';
+            if (!gamesEnabled && gameInterval) {
+                clearInterval(gameInterval);
+                gameInterval = null;
+            }
+        }
+
+        // Popup Functions
+        function showBanPopup(reason) {
+            document.getElementById('ban-reason-text').textContent = reason;
+            banPopup.style.display = 'block';
+        }
+
+        function showWarnPopup(reason) {
+            document.getElementById('warn-reason-text').textContent = reason;
+            warnPopup.style.display = 'block';
+        }
+
+        function dismissWarning() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            users[currentUser].warned = false;
+            users[currentUser].warnReason = '';
+            localStorage.setItem('users', JSON.stringify(users));
+            warnPopup.style.display = 'none';
+            showHomepage();
+        }
+
+        function showUnbanPopup(reason) {
+            document.getElementById('unban-reason-text').textContent = reason;
+            unbanPopup.style.display = 'block';
+        }
+
+        function agreeToTos() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            users[currentUser].unbanReason = '';
+            localStorage.setItem('users', JSON.stringify(users));
+            unbanPopup.style.display = 'none';
+            showHomepage();
+        }
+
+        function checkBanStatus() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userData = users[currentUser];
+            if (userData.banned) {
+                if (userData.banUntil !== 'permanent' && Date.now() > userData.banUntil) {
+                    userData.banned = false;
+                    userData.banReason = '';
+                    userData.banUntil = null;
+                    userData.notifications.push('Your ban has expired.');
+                    localStorage.setItem('users', JSON.stringify(users));
+                } else {
+                    showBanPopup(userData.banReason);
+                    logout();
+                }
+            }
+        }
+
+        // Avatar Functions
+        function loadAvatar() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userData = users[currentUser];
+            document.getElementById('head-color').value = userData.avatar.headColor;
+            document.getElementById('torso-color').value = userData.avatar.torsoColor;
+            document.getElementById('legs-color').value = userData.avatar.legsColor;
+        }
+
+        function updateAvatarPreview() {
+            const ctx = avatarPreviewCanvas.getContext('2d');
+            ctx.clearRect(0, 0, avatarPreviewCanvas.width, avatarPreviewCanvas.height);
+            const headColor = document.getElementById('head-color').value;
+            const torsoColor = document.getElementById('torso-color').value;
+            const legsColor = document.getElementById('legs-color').value;
+            drawAvatar(ctx, 40, 20, 20, 40, { headColor, torsoColor, legsColor });
+        }
+
+        function saveAvatar() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            users[currentUser].avatar.headColor = document.getElementById('head-color').value;
+            users[currentUser].avatar.torsoColor = document.getElementById('torso-color').value;
+            users[currentUser].avatar.legsColor = document.getElementById('legs-color').value;
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Avatar saved!');
+            updateProfilePic();
+            updateProfileDisplay();
+        }
+
+        function updateProfilePic() {
+            const ctx = profilePicCanvas.getContext('2d');
+            ctx.clearRect(0, 0, profilePicCanvas.width, profilePicCanvas.height);
+            drawAvatar(ctx, 15, 15, 20, 40);
+        }
+
+        function updateProfileDisplay() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userData = users[currentUser];
+            document.getElementById('profile-username').textContent = `@${currentUser}`;
+            const ctx = profileAvatarCanvas.getContext('2d');
+            ctx.clearRect(0, 0, profileAvatarCanvas.width, profileAvatarCanvas.height);
+            drawAvatar(ctx, 40, 20, 20, 40);
+        }
+
+        // Notification Functions
+        function displayNotifications() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userData = users[currentUser];
+            const notiList = document.getElementById('notifications-list');
+            notiList.innerHTML = '';
+            userData.notifications.forEach(noti => {
+                const p = document.createElement('p');
+                p.textContent = noti;
+                notiList.appendChild(p);
+            });
+        }
+
         // Game: Obstacle Parkour
         let obstacleAnimation;
         function startObstacle() {
             const canvas = document.getElementById('obstacle-canvas');
             const ctx = canvas.getContext('2d');
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            const userData = users[currentUser];
             let level = 1;
             let player = { x: 50, y: 300, width: 20, height: 40, vy: 0, speed: 5, jumping: false };
             let obstacles = generateObstacles(level);
@@ -1233,13 +1489,12 @@
                 ctx.fillStyle = '#87CEEB';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Player movement
                 if (keys['KeyW'] && player.y > 0) player.y -= player.speed;
                 if (keys['KeyS'] && player.y < canvas.height - player.height) player.y += player.speed;
                 if (keys['KeyA'] && player.x > 0) player.x -= player.speed;
                 if (keys['KeyD'] && player.x < canvas.width - player.width) player.x += player.speed;
 
-                player.vy += 0.5; // Gravity
+                player.vy += 0.5;
                 player.y += player.vy;
                 if (player.y > canvas.height - player.height) {
                     player.y = canvas.height - player.height;
@@ -1247,10 +1502,8 @@
                     player.jumping = false;
                 }
 
-                // Draw player
                 drawAvatar(ctx, player.x, player.y - 20, 20, 40);
 
-                // Obstacles
                 obstacles.forEach(ob => {
                     ob.x -= ob.speed;
                     ctx.fillStyle = '#666';
@@ -1260,7 +1513,7 @@
                         if (Math.random() < 0.1) level = Math.min(level + 1, 5);
                         obstacles = generateObstacles(level);
                     }
-                    if (checkCollision(player, ob)) player.x = 50; // Reset on collision
+                    if (checkCollision(player, ob)) player.x = 50;
                 });
 
                 ctx.fillStyle = '#000';
@@ -1291,8 +1544,6 @@
         function startReaction() {
             const canvas = document.getElementById('reaction-canvas');
             const ctx = canvas.getContext('2d');
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            const userData = users[currentUser];
             let square = { x: 0, y: 0, size: 50, active: false };
             let score = 0;
 
@@ -1323,10 +1574,8 @@
                 ctx.fillStyle = '#87CEEB';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Draw avatar
                 drawAvatar(ctx, 50, 180, 20, 40);
 
-                // Draw square
                 if (square.active) {
                     ctx.fillStyle = '#00FF00';
                     ctx.fillRect(square.x, square.y, square.size, square.size);
@@ -1354,8 +1603,6 @@
         function startTrivia() {
             const canvas = document.getElementById('trivia-canvas');
             const ctx = canvas.getContext('2d');
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            const userData = users[currentUser];
             const questions = [
                 { q: 'What is 2 + 2?', a: ['4', '3', '5', '6'], correct: '4' },
                 { q: 'What color is the sky?', a: ['Blue', 'Green', 'Red', 'Yellow'], correct: 'Blue' },
@@ -1388,7 +1635,6 @@
                 ctx.fillStyle = '#87CEEB';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Draw avatar
                 drawAvatar(ctx, 50, 180, 20, 40);
 
                 ctx.fillStyle = '#000';
@@ -1408,21 +1654,25 @@
         }
 
         // Avatar Drawing Function
-        function drawAvatar(ctx, x, y, width, height) {
+        function drawAvatar(ctx, x, y, width, height, overrideColors = null) {
             const users = JSON.parse(localStorage.getItem('users') || '{}');
             const userData = users[currentUser];
-            const accessories = userData.avatar.accessories;
+            const avatar = userData.avatar;
+            const headColor = overrideColors ? overrideColors.headColor : avatar.headColor;
+            const torsoColor = overrideColors ? overrideColors.torsoColor : avatar.torsoColor;
+            const legsColor = overrideColors ? overrideColors.legsColor : avatar.legsColor;
+            const accessories = avatar.accessories;
 
             if (accessories.includes('circle')) {
-                ctx.fillStyle = userData.avatar.headColor;
+                ctx.fillStyle = headColor;
                 ctx.beginPath();
                 ctx.arc(x + width / 2, y + width / 2, width / 2, 0, Math.PI * 2);
                 ctx.fill();
             } else {
-                ctx.fillStyle = userData.avatar.headColor;
+                ctx.fillStyle = headColor;
                 ctx.fillRect(x, y, width, width);
             }
-            ctx.fillStyle = userData.avatar.torsoColor;
+            ctx.fillStyle = torsoColor;
             ctx.fillRect(x - 5, y + width, width + 10, height / 2);
             if (accessories.includes('shirt')) {
                 ctx.fillStyle = '#FFFFFF';
@@ -1432,7 +1682,7 @@
                 ctx.textAlign = 'center';
                 ctx.fillText(userData.avatar.shirtText || '', x + width / 2, y + width + height / 4);
             }
-            ctx.fillStyle = userData.avatar.legsColor;
+            ctx.fillStyle = legsColor;
             ctx.fillRect(x - 5, y + width + height / 2, 10, height / 2);
             ctx.fillRect(x + width - 5, y + width + height / 2, 10, height / 2);
             if (accessories.includes('metro')) {
@@ -1479,7 +1729,7 @@
             updateProfileDisplay();
         }
 
-        // Check if already logged in
+        // Initialization
         if (sessionStorage.getItem('loggedInUser')) {
             currentUser = sessionStorage.getItem('loggedInUser');
             showHomepage();
