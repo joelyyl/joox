@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joox - Social Platform with Games</title>
     <style>
-        /* Your existing CSS styles remain unchanged */
         * {
             margin: 0;
             padding: 0;
@@ -331,7 +330,7 @@
         }
         #marketplace-container {
             display: none;
-            width:  Frameworks100%;
+            width: 100%;
             max-width: 900px;
         }
         .popup {
@@ -1143,17 +1142,23 @@
             showHomepage();
         }
 
-        // Admin Functions
+        // Admin Functions (Inserted from your new code)
         function banUser() {
             const username = document.getElementById('admin-username').value.trim();
             const reason = document.getElementById('ban-reason').value.trim();
             const duration = document.getElementById('ban-duration').value;
             const users = JSON.parse(localStorage.getItem('users') || '{}');
 
+            if (!username) {
+                alert('Please enter a username!');
+                return;
+            }
+
             if (!users[username]) {
                 alert('User not found!');
                 return;
             }
+
             if (username === currentUser) {
                 alert('You cannot ban yourself!');
                 return;
@@ -1175,10 +1180,16 @@
             const duration = document.getElementById('ban-duration').value;
             const users = JSON.parse(localStorage.getItem('users') || '{}');
 
+            if (!username) {
+                alert('Please enter a username!');
+                return;
+            }
+
             if (!users[username]) {
                 alert('User not found!');
                 return;
             }
+
             if (username === currentUser) {
                 alert('You cannot reset yourself!');
                 return;
@@ -1208,15 +1219,61 @@
             document.getElementById('ban-reason').value = '';
         }
 
+        function sendAdminNotification() {
+            const username = document.getElementById('admin-username').value.trim();
+            const text = document.getElementById('notification-text').value.trim();
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+            if (!text) {
+                alert('Please enter a notification message!');
+                return;
+            }
+
+            if (currentUser === 'OfficialJoox' && !username) {
+                // Broadcast to all users except OfficialJoox
+                Object.keys(users).forEach(user => {
+                    if (user !== 'OfficialJoox') {
+                        users[user].notifications.push(`OfficialJoox: ${text}`);
+                    }
+                });
+                localStorage.setItem('users', JSON.stringify(users));
+                alert('Notification sent to all users.');
+            } else {
+                // Send to a specific user
+                if (!username) {
+                    alert('Please enter a username or leave blank for all users (OfficialJoox only).');
+                    return;
+                }
+
+                if (!users[username]) {
+                    alert('User not found!');
+                    return;
+                }
+
+                users[username].notifications.push(`${currentUser === 'OfficialJoox' ? 'OfficialJoox' : 'Admin'}: ${text}`);
+                localStorage.setItem('users', JSON.stringify(users));
+                alert(`Notification sent to ${username}.`);
+            }
+
+            document.getElementById('admin-username').value = '';
+            document.getElementById('notification-text').value = '';
+        }
+
         function warnUser() {
             const username = document.getElementById('admin-username').value.trim();
             const reason = document.getElementById('warn-reason').value.trim();
             const users = JSON.parse(localStorage.getItem('users') || '{}');
 
+            if (!username) {
+                alert('Please enter a username!');
+                return;
+            }
+
             if (!users[username]) {
                 alert('User not found!');
                 return;
             }
+
             if (username === currentUser) {
                 alert('You cannot warn yourself!');
                 return;
@@ -1229,6 +1286,37 @@
             alert(`${username} has been warned.`);
             document.getElementById('admin-username').value = '';
             document.getElementById('warn-reason').value = '';
+        }
+
+        function unbanUser() {
+            const username = document.getElementById('admin-username').value.trim();
+            const reason = document.getElementById('unban-reason').value.trim();
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+            if (!username) {
+                alert('Please enter a username!');
+                return;
+            }
+
+            if (!users[username]) {
+                alert('User not found!');
+                return;
+            }
+
+            if (!users[username].banned) {
+                alert('User is not banned!');
+                return;
+            }
+
+            users[username].banned = false;
+            users[username].banReason = '';
+            users[username].banUntil = null;
+            users[username].unbanReason = reason;
+            users[username].notifications.push(`You have been unbanned. Reason: ${reason}`);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`${username} has been unbanned.`);
+            document.getElementById('admin-username').value = '';
+            document.getElementById('unban-reason').value = '';
         }
 
         function addJooxBucks() {
@@ -1279,74 +1367,6 @@
             document.getElementById('admin-username').value = '';
             document.getElementById('jooxbucks-amount').value = '';
             if (username === currentUser) updateJooxBucks();
-        }
-
-        function sendAdminNotification() {
-            const username = document.getElementById('admin-username').value.trim();
-            const text = document.getElementById('notification-text').value.trim();
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-
-            if (!text) {
-                alert('Please enter a notification message!');
-                return;
-            }
-
-            // Debugging logs (remove after testing)
-            console.log('Current User:', currentUser);
-            console.log('Target Username:', username);
-            console.log('Users in storage:', Object.keys(users));
-
-            if (currentUser === 'OfficialJoox' && username === '') {
-                // Send to all users except OfficialJoox
-                Object.keys(users).forEach(user => {
-                    if (user !== 'OfficialJoox') {
-                        users[user].notifications.push(`OfficialJoox: ${text}`);
-                    }
-                });
-                localStorage.setItem('users', JSON.stringify(users));
-                alert('Notification sent to all users.');
-            } else {
-                // Send to specific user
-                if (!username) {
-                    alert('Please enter a username or leave blank for all users (OfficialJoox only).');
-                    return;
-                }
-                if (!users.hasOwnProperty(username)) {
-                    alert('User not found!');
-                    return;
-                }
-                users[username].notifications.push(`${currentUser === 'OfficialJoox' ? 'OfficialJoox' : 'Admin'}: ${text}`);
-                localStorage.setItem('users', JSON.stringify(users));
-                alert(`Notification sent to ${username}.`);
-            }
-
-            document.getElementById('admin-username').value = '';
-            document.getElementById('notification-text').value = '';
-        }
-
-        function unbanUser() {
-            const username = document.getElementById('admin-username').value.trim();
-            const reason = document.getElementById('unban-reason').value.trim();
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-
-            if (!users[username]) {
-                alert('User not found!');
-                return;
-            }
-            if (!users[username].banned) {
-                alert('User is not banned!');
-                return;
-            }
-
-            users[username].banned = false;
-            users[username].banReason = '';
-            users[username].banUntil = null;
-            users[username].unbanReason = reason;
-            users[username].notifications.push(`You have been unbanned. Reason: ${reason}`);
-            localStorage.setItem('users', JSON.stringify(users));
-            alert(`${username} has been unbanned.`);
-            document.getElementById('admin-username').value = '';
-            document.getElementById('unban-reason').value = '';
         }
 
         function toggleGames() {
